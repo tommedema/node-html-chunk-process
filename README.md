@@ -1,6 +1,11 @@
 #html-chunk-process
 
-html-chunk-process chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together. This is useful when you want to post HTML into an API that has a length limit on the request payload.
+html-chunk-process chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together.
+
+##why?
+This is useful when you want to post HTML into an API that has a length limit on the request payload.
+
+##example
 
     <!DOCTYPE html>
     <html class="test">
