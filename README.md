@@ -1,6 +1,12 @@
-#html-chunk-process
+#html-chunk-process (Work In Progress)
 
 This library chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together.
+
+##ToDo
+- initial version
+- cleanup readme
+- test
+- publish to NPM
 
 ##Install (WIP)
 
