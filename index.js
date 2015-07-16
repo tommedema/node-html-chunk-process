@@ -1,26 +1,43 @@
 var cheerio = require('cheerio');
 
-function chunkProcess(lengthInt, htmlStr, processorFn, cbFn)
+function chunkProcess(lengthInt, htmlStr, processorFn)
 {
-    var $         = cheerio.load(htmlStr, { decodeEntities: false });
-    var $root     = $.root();
+    var $ = cheerio.load(htmlStr, { decodeEntities: false });
+
+    return decomposeElements(lengthInt, $, $.root(), processorFn);
+}
+
+function decomposeElements(lengthInt, $, $root, processorFn)
+{
     var $contents = $root.contents();
+    var elements  = [];
 
     $contents.each(function(index, element)
     {
+        var $element  = $(element);
         var outerHTML = $.html(element).trim();
 
-        if (outerHTML.length > lengthInt)
+        if (outerHTML)
         {
-            console.log('large element: ' + outerHTML);
-        }
-        else if (outerHTML.length)
-        {
-            console.log('small element: ' + outerHTML);
+            if (outerHTML.length <= lengthInt)
+            {
+                elements.push({
+                    fragmentPreProcessed: outerHTML,
+                    fragmentPostProcessed: processorFn(outerHTML)
+                });
+            }
+            else if ($element.children().length)
+            {
+                elements.push({
+                    tag: element.name,
+                    attribs: element.attribs,
+                    children: decomposeElements(lengthInt, $, $element, processorFn)
+                });
+            }
         }
     });
     
-    return cbFn && cbFn(null, htmlStr);
+    return elements;
 }
 
 module.exports = chunkProcess;

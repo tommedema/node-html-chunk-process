@@ -3,7 +3,7 @@
 This library chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together.
 
 ##ToDo
-- initial version
+- allow for asynchronous processor function
 - cleanup readme
 - test
 - publish to NPM
@@ -39,7 +39,9 @@ html-chunk-process(100, processor) should return (intermediary)
         }
         {
             tag: 'html',
-            tagLiteral: '<html class="test">',
+            attribs: [
+                class: 'test'
+            ],
             children: [
                 {
                     fragmentPreProcessed: '<head><title>Hi there</title></head>',
@@ -47,7 +49,7 @@ html-chunk-process(100, processor) should return (intermediary)
                 },
                 {
                     tag: 'body',
-                    tagLiteral: '<body>',
+                    attribs: [],
                     children: [
                         {
                             fragmentPreProcessed: 'This is a page a simple page',

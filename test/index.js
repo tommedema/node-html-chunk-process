@@ -1,16 +1,13 @@
 var chunkProcess = require('../');
 var fs           = require('fs');
+var inspect      = require('util').inspect;
 var htmlStr      = fs.readFileSync(__dirname + '/input/test1.html', {encoding: 'utf8'});
 
-chunkProcess(100, htmlStr,
-    function(htmlFragment, cb)
+var result = chunkProcess(100, htmlStr,
+    function(htmlFragment)
     {
-        return cb(htmlFragment);
-    },
-    function(err, htmlStrProcessed)
-    {
-        if (err) return console.error(err);
-
-        //console.log(htmlStrProcessed);
+        return htmlFragment;
     }
 );
+
+console.log(inspect(result, false, 10));
