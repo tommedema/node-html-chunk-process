@@ -7,8 +7,11 @@ function chunkProcessHTML(options, cbFn)
     var $original     = cheerio.load(options.htmlStr, { decodeEntities: false });
     var $processed    = cheerio.load('', { decodeEntities: false });
     var processedHTML = '';
-    decomposeElements(options.lengthInt, $original, $original.root(), options.processorFn, function(children)
+    decomposeElements(options.lengthInt, $original, $original.root(), options.processorFn, function(children, excluded)
     {
+
+        console.log(excluded);
+
         var fragment = {
             tag     : 'root',
             attribs : {},
@@ -25,7 +28,7 @@ function chunkProcessHTML(options, cbFn)
             });
         }
 
-        cbFn(processedHTML);
+        cbFn(null, processedHTML, excluded);
     });
 }
 
@@ -63,7 +66,8 @@ function decomposeElements(lengthInt, $, $root, processorFn, cbFn)
 {
     var $contents = $root.contents();
     var elements  = [];
-    var next      = after($contents.length, cbFn.bind(this, elements));
+    var excluded  = [];
+    var next      = after($contents.length, cbFn.bind(this, elements, excluded));
 
     $contents.each(function(index, element)
     {
@@ -85,18 +89,25 @@ function decomposeElements(lengthInt, $, $root, processorFn, cbFn)
             }
             else if ($element.children().length)
             {
-                decomposeElements(lengthInt, $, $element, processorFn, function(children)
+                decomposeElements(lengthInt, $, $element, processorFn, function(children, _excluded)
                 {
                     elements.push({
                         tag     : element.name,
                         attribs : element.attribs,
                         children: children
                     });
+                    
+                    for (var i = 0, il = _excluded.length; i < il; i++)
+                    {
+                        excluded.push(_excluded[i]);
+                    }
+
                     next();
                 });
             }
             else
             {
+                excluded.push(outerHTML);
                 next();
             }
         }

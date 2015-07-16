@@ -8,9 +8,9 @@ chunkProcess({
     htmlStr    : htmlStr,
     beautify   : true,
     processorFn: processAsync
-}, function(result)
+}, function(err, result, excluded)
 {
-    console.log('original:\n%s\n\nresult:\n%s', htmlStr, result);
+    console.log('original:\n%s\n\nresult:\n%s\n\nexcluded:\n%j', htmlStr, result, excluded);
 });
 
 function processAsync(htmlFragment, cb)
