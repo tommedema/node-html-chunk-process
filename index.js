@@ -9,9 +9,6 @@ function chunkProcessHTML(options, cbFn)
     var processedHTML = '';
     decomposeElements(options.lengthInt, $original, $original.root(), options.processorFn, function(children, excluded)
     {
-
-        console.log(excluded);
-
         var fragment = {
             tag     : 'root',
             attribs : {},
@@ -48,10 +45,6 @@ function stitchFragment($, $parent, fragment)
         if (typeof child.fragmentPostProcessed === 'string')
         {
             $parent.append('\n', child.fragmentPostProcessed);
-            if (child.fragmentPostProcessed.indexOf('Hi there') !== -1)
-            {
-                console.log(child.fragmentPostProcessed);
-            }
         }
         else
         {            
