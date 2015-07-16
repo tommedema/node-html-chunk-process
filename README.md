@@ -1,19 +1,20 @@
-#html-chunk-process (Work In Progress)
+#node-html-chunk-process (WIP)
 
 This library chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together.
 
 ##ToDo
 - allow for asynchronous processor function
+- return object and add excluded parts to excluded key
 - cleanup readme
 - test
 - publish to NPM
 
-##Install (WIP)
+##Install
 
     npm install html-chunk-process
 
 ##Why?
-This is useful when you want to post HTML into an API that has a length limit on the request payload.
+This is useful when you want to post HTML into an API that has a length limit on the request payload. In many cases you cannot simply split the string because the API wouldn't understand broken chunks of HTML. A solution to this problem turns out to be rather complicated, but no worries: html-chunk-process comes to the rescue.
 
 ##Example
 
@@ -82,4 +83,4 @@ and finally
     </html>
 
 ##Note
-if an element has no children but exceeds the limit length it is not included in the result (because there is no reliable way to chunk it)
+If an element has no children but exceeds the limit length it is not included in the result (because there is no reliable way to chunk it).
