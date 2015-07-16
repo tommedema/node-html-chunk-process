@@ -120,7 +120,7 @@ ___example.js___
         processorFn: processAsync
     }, function(err, result, excluded)
     {
-        console.log('original:\n%s\n\nresult:\n%s\n\nexcluded:\n%j', htmlStr, result, excluded);
+        console.log('result:\n%s\n\nexcluded:\n%j', result, excluded);
     });
 
     function processAsync(htmlFragment, cb)
@@ -131,22 +131,6 @@ ___example.js___
             cb(htmlFragment);
         }, 1000);   
     }
-
-___output (original)___
-
-    <!DOCTYPE html>
-    <html class="test">
-        <head>
-          <title>Hi there</title>
-        </head>
-        <body>
-          This is a page a simple page
-          <div>
-              and here is more content we don't want
-          </div>
-          and here is contant that is soo long but doesnt have any children so really there is no way to know how to chunk it in a reliable manner, so we might as well skip it; will not be a problem with typical APIs because those will allow e.g. 10k+ chars
-        </body>
-    </html>
 
 ___output (result)___
 
