@@ -1,16 +1,18 @@
 var cheerio = require('cheerio');
+var after   = require('after');
 
-function chunkProcess(lengthInt, htmlStr, processorFn)
+function chunkProcessHtml(lengthInt, htmlStr, processorFn, cbFn)
 {
     var $ = cheerio.load(htmlStr, { decodeEntities: false });
 
-    return decomposeElements(lengthInt, $, $.root(), processorFn);
+    decomposeElements(lengthInt, $, $.root(), processorFn, cbFn);
 }
 
-function decomposeElements(lengthInt, $, $root, processorFn)
+function decomposeElements(lengthInt, $, $root, processorFn, cbFn)
 {
     var $contents = $root.contents();
     var elements  = [];
+    var next      = after($contents.length, cbFn.bind(this, elements));
 
     $contents.each(function(index, element)
     {
@@ -21,23 +23,37 @@ function decomposeElements(lengthInt, $, $root, processorFn)
         {
             if (outerHTML.length <= lengthInt)
             {
-                elements.push({
-                    fragmentPreProcessed: outerHTML,
-                    fragmentPostProcessed: processorFn(outerHTML)
+                processorFn(outerHTML, function(processedHTML)
+                {
+                    elements.push({
+                        fragmentPreProcessed : outerHTML,
+                        fragmentPostProcessed: processedHTML
+                    });
+                    next();
                 });
             }
             else if ($element.children().length)
             {
-                elements.push({
-                    tag: element.name,
-                    attribs: element.attribs,
-                    children: decomposeElements(lengthInt, $, $element, processorFn)
+                decomposeElements(lengthInt, $, $element, processorFn, function(children)
+                {
+                    elements.push({
+                        tag     : element.name,
+                        attribs : element.attribs,
+                        children: children
+                    });
+                    next();
                 });
             }
+            else
+            {
+                next();
+            }
+        }
+        else
+        {
+            next();
         }
     });
-    
-    return elements;
 }
 
-module.exports = chunkProcess;
+module.exports = chunkProcessHtml;
