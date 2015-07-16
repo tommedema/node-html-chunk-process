@@ -23,6 +23,7 @@
   "homepage": "https://github.com/tommedema/node-html-chunk-process",
   "dependencies": {
     "after": "^0.8.1",
-    "cheerio": "^0.19.0"
+    "cheerio": "^0.19.0",
+    "js-beautify": "^1.5.10"
   }
 }

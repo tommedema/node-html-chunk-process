@@ -1,11 +1,62 @@
-var cheerio = require('cheerio');
-var after   = require('after');
+var cheerio  = require('cheerio');
+var after    = require('after');
+var beautify = require('js-beautify').html;
 
-function chunkProcessHtml(lengthInt, htmlStr, processorFn, cbFn)
+function chunkProcessHTML(options, cbFn)
 {
-    var $ = cheerio.load(htmlStr, { decodeEntities: false });
+    var $original     = cheerio.load(options.htmlStr, { decodeEntities: false });
+    var $processed    = cheerio.load('', { decodeEntities: false });
+    var processedHTML = '';
+    decomposeElements(options.lengthInt, $original, $original.root(), options.processorFn, function(children)
+    {
+        var fragment = {
+            tag     : 'root',
+            attribs : {},
+            children: children
+        };
 
-    decomposeElements(lengthInt, $, $.root(), processorFn, cbFn);
+        var processedHTML = stitchFragment($processed, $processed.root(), fragment).html();
+
+        if (options.beautify)
+        {
+            processedHTML = beautify(processedHTML, {
+                'unformatted' : [],
+                'extra_liners': []
+            });
+        }
+
+        cbFn(processedHTML);
+    });
+}
+
+function stitchFragment($, $parent, fragment)
+{
+    if (fragment.tag !== 'root')
+    {
+        $newParent = $('<' + fragment.tag + '></' + fragment.tag + '>').attr(fragment.attribs);
+        $parent.append($newParent);
+        $parent = $newParent;
+    }
+
+    for (var i = 0, il = fragment.children.length; i < il; i++)
+    {
+        var child = fragment.children[i];
+
+        if (typeof child.fragmentPostProcessed === 'string')
+        {
+            $parent.append('\n', child.fragmentPostProcessed);
+            if (child.fragmentPostProcessed.indexOf('Hi there') !== -1)
+            {
+                console.log(child.fragmentPostProcessed);
+            }
+        }
+        else
+        {            
+            $parent.append(stitchFragment($, $parent, child));
+        }
+    }
+
+    return $;
 }
 
 function decomposeElements(lengthInt, $, $root, processorFn, cbFn)
@@ -56,4 +107,4 @@ function decomposeElements(lengthInt, $, $root, processorFn, cbFn)
     });
 }
 
-module.exports = chunkProcessHtml;
+module.exports = chunkProcessHTML;

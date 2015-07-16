@@ -3,17 +3,21 @@ var fs           = require('fs');
 var inspect      = require('util').inspect;
 var htmlStr      = fs.readFileSync(__dirname + '/input/test1.html', {encoding: 'utf8'});
 
-chunkProcess(100, htmlStr,
-    function(htmlFragment, cb)
+chunkProcess({
+    lengthInt  : 100,
+    htmlStr    : htmlStr,
+    beautify   : true,
+    processorFn: processAsync
+}, function(result)
+{
+    console.log('original:\n%s\n\nresult:\n%s', htmlStr, result);
+});
+
+function processAsync(htmlFragment, cb)
+{
+    htmlFragment = htmlFragment.replace('Hi there', 'Goodbye');
+    setTimeout(function()
     {
-        htmlFragment = htmlFragment.replace('o', '0').replace('a', '@').replace('i', '!');
-        setTimeout(function()
-        {
-            cb(htmlFragment);
-        }, 1000);   
-    },
-    function(result)
-    {
-        console.log(inspect(result, false, 10));
-    }
-);
+        cb(htmlFragment);
+    }, 1000);   
+}

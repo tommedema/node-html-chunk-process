@@ -3,7 +3,6 @@
 This library chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together.
 
 ##ToDo
-- allow for asynchronous processor function
 - return object and add excluded parts to excluded key
 - cleanup readme
 - test
