@@ -1,0 +1,24 @@
+{
+  "name": "html-chunk-process",
+  "version": "1.0.0",
+  "description": "html-chunk-process chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tommedema/node-html-chunk-process.git"
+  },
+  "keywords": [
+    "html",
+    "chunk",
+    "split"
+  ],
+  "author": "Tom Medema",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tommedema/node-html-chunk-process/issues"
+  },
+  "homepage": "https://github.com/tommedema/node-html-chunk-process"
+}
