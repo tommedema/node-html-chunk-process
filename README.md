@@ -125,16 +125,15 @@ ___example.js___
 
     function processAsync(htmlFragment, cb)
     {
-        htmlFragment = htmlFragment.replace('Hi there', 'Goodbye');
+        htmlFragment = htmlFragment.replace('Hi there', 'Goodbye').replace('don\'t want', 'want');
         setTimeout(function()
         {
             cb(htmlFragment);
         }, 1000);   
     }
 
-___output___
+___output (original)___
 
-    original:
     <!DOCTYPE html>
     <html class="test">
         <head>
@@ -149,7 +148,8 @@ ___output___
         </body>
     </html>
 
-    result:
+___output (result)___
+
     <!DOCTYPE html>
     <html class="test">
     <head>
@@ -158,10 +158,11 @@ ___output___
     <body>
         This is a page a simple page
         <div>
-            and here is more content we don't want
+            and here is more content we want
         </div>
     </body>
     </html>
 
-    excluded:
+___output (excluded)___
+
     ["and here is contant that is soo long but doesnt have any children so really there is no way to know how to chunk it in a reliable manner, so we might as well skip it; will not be a problem with typical APIs because those will allow e.g. 10k+ chars"]
