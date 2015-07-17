@@ -4,10 +4,6 @@ Do you need to access an HTML-digesting API with a request payload limit? Distri
 
 This library aims to help by chunking a HTML document (defined as a string) to a collection of the largest possible blocks of valid HTML (where a character length limit defines the boundary). Each chunk is then processed by a passed-in asynchronous processing function (which typically invokes your external API), after which the processed chunks are intelligently stitched back together.
 
-##ToDo
-- test with mocha
-- publish to NPM
-
 ##Install
 
     npm install html-chunk-process
@@ -99,11 +95,10 @@ ___test1.html___
         </body>
     </html>
 
-___example.js___
+___example/index.js___
 
     var chunkProcessHTML = require('../');
     var fs               = require('fs');
-    var inspect          = require('util').inspect;
     var originalHTML     = fs.readFileSync(__dirname + '/../test/input/test1.html', {encoding: 'utf8'});
 
     chunkProcessHTML({
@@ -155,3 +150,9 @@ ___output (result)___
 ___output (excluded)___
 
     ["Here is content that is very long but doesnt have any children. Really there is no way to know how to chunk it in a reliable, cross-script, and cross-language manner. Skipping this fragment should not be a problem with typical APIs because those will allow over thousands of characters, at which point this would not be a fragment without children."]
+
+##Test
+
+    npm test
+
+Tests require mocha. The current tests are very minimal, feel free to add more tests and submit a pull request.

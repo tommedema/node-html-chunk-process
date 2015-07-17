@@ -1,6 +1,5 @@
 var chunkProcessHTML = require('../');
 var fs               = require('fs');
-var inspect          = require('util').inspect;
 var originalHTML     = fs.readFileSync(__dirname + '/../test/input/test1.html', {encoding: 'utf8'});
 
 chunkProcessHTML({
@@ -10,6 +9,9 @@ chunkProcessHTML({
     processorFn : processAsync
 }, function(err, processedHTML, excludedFragments)
 {
+
+    console.log(processedHTML.replace(/\s/g, ''));
+    
     console.log(
         'original:\n'   +
         '%s\n\n'        +

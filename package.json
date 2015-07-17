@@ -4,7 +4,7 @@
   "description": "html-chunk-process chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together",
   "main": "index.js",
   "scripts": {
-    "test": "mocha tests/index.js"
+    "test": "mocha test/index.js"
   },
   "repository": {
     "type": "git",
