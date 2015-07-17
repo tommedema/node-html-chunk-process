@@ -27,7 +27,7 @@ chunkProcessHTML({
 function processAsync(htmlFragment, cb)
 {
     //typically this would invoke an external HTML-digesting API with a payload limit
-    htmlFragment = htmlFragment.replace('Hi there', 'Goodbye');
+    htmlFragment = htmlFragment.replace('Hi there', 'It works').replace('don\'t', 'do');
     setTimeout(function()
     {
         cb(htmlFragment);

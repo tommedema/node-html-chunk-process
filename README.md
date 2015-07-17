@@ -1,9 +1,11 @@
 #node-html-chunk-process
 
-This library chunks HTML to a collection of the largest possible blocks of code, delimited by a character length limit, processes these chunks of valid HTML by a passed-in (and optionally asynchronous) processing function, and then returns the processed chunks of HTML after stitching them back together. This is useful when you need to process HTML in an API with a request payload limit, but cannot send invalid chunks of HTML (which would be the case when you would do a naive string split).
+Do you need to access an HTML-digesting API with a request payload limit? Distributing your payload across multiple requests is incredibly complex in this case, since HTML defines a hierarchical structure that cannot be split in a linear way without breaking context.
+
+This library aims to help by chunking a HTML document (defined as a string) to a collection of the largest possible blocks of valid HTML (where a character length limit defines the boundary). Each chunk is then processed by a passed-in asynchronous processing function (which typically invokes your external API), after which the processed chunks are intelligently stitched back together.
 
 ##ToDo
-- test
+- test with mocha
 - publish to NPM
 
 ##Install
@@ -11,7 +13,7 @@ This library chunks HTML to a collection of the largest possible blocks of code,
     npm install html-chunk-process
 
 ##Why?
-This is useful when you want to post HTML into an API that has a length limit on the request payload. In many cases you cannot simply split the string because the API wouldn't understand broken chunks of HTML (e.g. when it requires context, such as a translation library). A solution to this problem turns out to be rather complicated, but no worries: html-chunk-process comes to the rescue.
+This is useful when you need to process HTML using an API with a request payload limit (such as a translation library), but cannot send invalid chunks of HTML or when the APIs effectiveness requires context. A naive string split does not account for either of these cases, but html-chunk-process does.
 
 ##Illustrative example
 
@@ -23,66 +25,57 @@ Take the following HTML document:
           <title>Hi there</title>
         </head>
         <body>
-          This is a simple page
+          This is a page a simple page
           <div>
-              and here is more content that exceeds our limit
+              and here is more content we don't want
           </div>
+          Here is content that is very long but doesnt have any children. Really there is no way to know how to chunk it in a reliable, cross-script, and cross-language manner. Skipping this fragment should not be a problem with typical APIs because those will allow over thousands of characters, at which point this would not be a fragment without children.
         </body>
     </html>
 
-html-chunk-process(100, processor) breaks the HTML into valid chunks of HTML where each chunk has a total length less than or equal to the given limit. This works by decomposing the HTML into chunks, like so:
+`html-chunk-process` breaks the HTML into valid chunks of HTML where each chunk has a total length less than or equal to the given limit. This works by decomposing the HTML into chunks, like so (with a length limit of 100, although typically the limit would be much greater, such as 10k characters):
 
     {
         tag: 'root',
-        attribs: [],
-        children: [
-            {
-                fragmentPreProcessed: '<!DOCTYPE html>'
-                fragmentPostProcessed: '<!DOCTYPE html>'
-            }
-            {
-                tag: 'html',
-                attribs: [
-                    class: 'test'
-                ],
-                children: [
-                    {
-                        fragmentPreProcessed: '<head><title>Hi there</title></head>',
-                        fragmentPostProcessed: '<head><title>Ni hao</title></head>'
-                    },
-                    {
-                        tag: 'body',
-                        attribs: [],
-                        children: [
-                            {
-                                fragmentPreProcessed: 'This is a simple page',
-                                fragmentPostProcessed: 'Zhege page bu hao'
-                            },
-                            {
-                                fragmentPreProcessed: '<div>and here is more content that exceeds our limit</div>',
-                                fragmentPostProcessed: '<div>he zhe content women bu yao</div>',
-                            }
-                        ]
-                    }
-
-                ]
-            }
-        ]
+        attribs: {},
+        children: [{
+            fragmentPreProcessed: '<!DOCTYPE html>',
+            fragmentPostProcessed: '<!DOCTYPE html>'
+        }, {
+            tag: 'html',
+            attribs: {
+                class: 'test'
+            },
+            children: [{
+                fragmentPreProcessed: '<head>\n      <title>Hi there</title>\n    </head>',
+                fragmentPostProcessed: '<head>\n      <title>Goodbye</title>\n    </head>'
+            }, {
+                tag: 'body',
+                attribs: {},
+                children: [{
+                    fragmentPreProcessed: 'This is a page a simple page',
+                    fragmentPostProcessed: 'This is a page a simple page'
+                }, {
+                    fragmentPreProcessed: '<div>\n          and here is more content we don\'t want\n      </div>',
+                    fragmentPostProcessed: '<div>\n          and here is more content we don\'t want\n      </div>'
+                }]
+            }]
+        }]
     }
 
-These processed chunks are then stitched back together (and optionally beautified), giving you a processed result like the following:
+These processed chunks are then stitched back together (and optionally beautified when `beautify: true` is passed as an option), giving you a processed result like the following:
 
     <!DOCTYPE html>
     <html class="test">
-        <head>
-          <title>Ni hao</title>
-        </head>
-        <body>
-          Zhege page bu hao
-          <div>
-              he zhe content women bu yao
-          </div>
-        </body>
+    <head>
+        <title>It works</title>
+    </head>
+    <body>
+        This is a page a simple page
+        <div>
+            and here is more content we do want
+        </div>
+    </body>
     </html>
 
 ##Note
@@ -102,30 +95,42 @@ ___test1.html___
           <div>
               and here is more content we don't want
           </div>
-          and here is contant that is soo long but doesnt have any children so really there is no way to know how to chunk it in a reliable manner, so we might as well skip it; will not be a problem with typical APIs because those will allow e.g. 10k+ chars
+          Here is content that is very long but doesnt have any children. Really there is no way to know how to chunk it in a reliable, cross-script, and cross-language manner. Skipping this fragment should not be a problem with typical APIs because those will allow over thousands of characters, at which point this would not be a fragment without children.
         </body>
     </html>
 
 ___example.js___
 
-    var chunkProcess = require('../');
-    var fs           = require('fs');
-    var inspect      = require('util').inspect;
-    var htmlStr      = fs.readFileSync(__dirname + '/input/test1.html', {encoding: 'utf8'});
+    var chunkProcessHTML = require('../');
+    var fs               = require('fs');
+    var inspect          = require('util').inspect;
+    var originalHTML     = fs.readFileSync(__dirname + '/../test/input/test1.html', {encoding: 'utf8'});
 
-    chunkProcess({
-        lengthInt  : 100,
-        htmlStr    : htmlStr,
-        beautify   : true,
-        processorFn: processAsync
-    }, function(err, result, excluded)
+    chunkProcessHTML({
+        lengthInt   : 100,
+        originalHTML: originalHTML,
+        beautify    : true,
+        processorFn : processAsync
+    }, function(err, processedHTML, excludedFragments)
     {
-        console.log('result:\n%s\n\nexcluded:\n%j', result, excluded);
+        console.log(
+            'original:\n'   +
+            '%s\n\n'        +
+
+            'result:\n'     +
+            '%s\n\n'        +
+
+            'excluded:\n'   +
+            '%j',
+
+            originalHTML, processedHTML, excludedFragments
+        );
     });
 
     function processAsync(htmlFragment, cb)
     {
-        htmlFragment = htmlFragment.replace('Hi there', 'Goodbye').replace('don\'t want', 'want');
+        //typically this would invoke an external HTML-digesting API with a payload limit
+        htmlFragment = htmlFragment.replace('Hi there', 'It works').replace('don\'t', 'do');
         setTimeout(function()
         {
             cb(htmlFragment);
@@ -137,16 +142,16 @@ ___output (result)___
     <!DOCTYPE html>
     <html class="test">
     <head>
-        <title>Goodbye</title>
+        <title>It works</title>
     </head>
     <body>
         This is a page a simple page
         <div>
-            and here is more content we want
+            and here is more content we do want
         </div>
     </body>
     </html>
 
 ___output (excluded)___
 
-    ["and here is contant that is soo long but doesnt have any children so really there is no way to know how to chunk it in a reliable manner, so we might as well skip it; will not be a problem with typical APIs because those will allow e.g. 10k+ chars"]
+    ["Here is content that is very long but doesnt have any children. Really there is no way to know how to chunk it in a reliable, cross-script, and cross-language manner. Skipping this fragment should not be a problem with typical APIs because those will allow over thousands of characters, at which point this would not be a fragment without children."]
