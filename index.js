@@ -1,13 +1,14 @@
 var cheerio  = require('cheerio');
 var after    = require('after');
 var beautify = require('js-beautify').html;
+var extend   = require('node.extend');
 
 function chunkProcessHTML(options, cbFn)
 {
-    var $original     = cheerio.load(options.htmlStr, { decodeEntities: false });
-    var $processed    = cheerio.load('', { decodeEntities: false });
+    var $oDOM         = cheerio.load(options.originalHTML, { decodeEntities: false });
+    var $tDOM         = cheerio.load('', { decodeEntities: false });
     var processedHTML = '';
-    decomposeElements(options.lengthInt, $original, $original.root(), options.processorFn, function(children, excluded)
+    decomposeElements(options.lengthInt, $oDOM, $oDOM.root(), options.processorFn, function(children, excluded)
     {
         var fragment = {
             tag     : 'root',
@@ -15,14 +16,14 @@ function chunkProcessHTML(options, cbFn)
             children: children
         };
 
-        var processedHTML = stitchFragment($processed, $processed.root(), fragment).html();
+        var processedHTML = stitchFragment($tDOM, $tDOM.root(), fragment).html();
 
         if (options.beautify)
         {
-            processedHTML = beautify(processedHTML, {
+            processedHTML = beautify(processedHTML, extend({
                 'unformatted' : [],
                 'extra_liners': []
-            });
+            }, options.beautifyOptions || {}));
         }
 
         cbFn(null, processedHTML, excluded);
