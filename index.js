@@ -26,7 +26,7 @@ function chunkProcessHTML(options, cbFn)
             }, options.beautifyOptions || {}));
         }
 
-        cbFn(null, processedHTML, excluded);
+        cbFn(null, processedHTML, excluded, fragment);
     });
 }
 
@@ -59,9 +59,47 @@ function stitchFragment($, $parent, fragment)
 function decomposeElements(lengthInt, $, $root, processorFn, cbFn)
 {
     var $contents = $root.contents();
-    var elements  = [];
+    var elements  = [{
+                        fragmentPreProcessed: '',
+                        fragmentPostProcessed: null    
+                    }];
     var excluded  = [];
-    var next      = after($contents.length, cbFn.bind(this, elements, excluded));
+    var next      = after($contents.length, processRawElements);
+
+    function processRawElements()
+    {
+        var innerNext = after(elements.length, cbFn.bind(this, elements, excluded));
+
+        for (var index = 0; index < elements.length; index++)
+        {
+            var element = elements[index];
+
+            if (typeof element.fragmentPreProcessed === 'string')
+            {
+                if (!element.fragmentPreProcessed.trim())
+                {
+                    elements.splice(index, 1);
+                    index--;
+                    innerNext();
+                }
+                else
+                {
+                    (function(element)
+                    {
+                        processorFn(element.fragmentPreProcessed, function(processedHTML)
+                        {
+                            element.fragmentPostProcessed = processedHTML;
+                            innerNext();
+                        });
+                    })(element);
+                }
+            }
+            else
+            {
+                innerNext();
+            }
+        }
+    }
 
     $contents.each(function(index, element)
     {
@@ -70,16 +108,21 @@ function decomposeElements(lengthInt, $, $root, processorFn, cbFn)
 
         if (outerHTML)
         {
-            if (outerHTML.length <= lengthInt)
+            var lastElement = elements[elements.length-1];
+
+            if (typeof lastElement.fragmentPreProcessed === 'string'
+                && lastElement.fragmentPreProcessed.length + outerHTML.length <= lengthInt)
             {
-                processorFn(outerHTML, function(processedHTML)
-                {
-                    elements.push({
-                        fragmentPreProcessed : outerHTML,
-                        fragmentPostProcessed: processedHTML
-                    });
-                    next();
+                lastElement.fragmentPreProcessed += outerHTML;
+                next();
+            }
+            else if (outerHTML.length <= lengthInt)
+            {
+                elements.push({
+                    fragmentPreProcessed : outerHTML,
+                    fragmentPostProcessed: null
                 });
+                next();
             }
             else if ($element.children().length)
             {

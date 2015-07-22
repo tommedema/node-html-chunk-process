@@ -1,18 +1,21 @@
 var chunkProcessHTML = require('../');
 var fs               = require('fs');
-var originalHTML     = fs.readFileSync(__dirname + '/../test/input/test1.html', {encoding: 'utf8'});
+var originalHTML     = fs.readFileSync(__dirname + '/input.html', {encoding: 'utf8'});
 
 chunkProcessHTML({
     lengthInt   : 100,
     originalHTML: originalHTML,
     beautify    : true,
     processorFn : processAsync
-}, function(err, processedHTML, excludedFragments)
+}, function(err, processedHTML, excludedFragments, decomposed)
 {
 
-    console.log(processedHTML.replace(/\s/g, ''));
+    fs.writeFileSync(__dirname + '/output.txt', processedHTML);
     
     console.log(
+        'decomposed:\n'   +
+        '%j\n\n'        +
+
         'original:\n'   +
         '%s\n\n'        +
 
@@ -22,7 +25,7 @@ chunkProcessHTML({
         'excluded:\n'   +
         '%j',
 
-        originalHTML, processedHTML, excludedFragments
+        decomposed, originalHTML, processedHTML, excludedFragments
     );
 });
 
@@ -33,5 +36,5 @@ function processAsync(htmlFragment, cb)
     setTimeout(function()
     {
         cb(htmlFragment);
-    }, 1000);   
+    }, 1000);
 }

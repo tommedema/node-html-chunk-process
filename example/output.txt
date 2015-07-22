@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html class="test">
+<head>
+    <title>It works</title>
+</head>
+<body>
+    This is a simple page
+    <div>
+        and here is content we do want
+    </div>
+</body>
+</html>
