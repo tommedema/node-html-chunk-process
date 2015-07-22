@@ -1,6 +1,6 @@
 {
   "name": "html-chunk-process",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "html-chunk-process chunks HTML to a collection of the largest possible blocks of code, processes these chunks by a custom processor, and then returns the processed chunks after stitching them back together",
   "main": "index.js",
   "scripts": {
